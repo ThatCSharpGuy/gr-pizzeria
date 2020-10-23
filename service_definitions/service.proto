@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+message Pizza {
+    repeated string toppings = 1;
+    int32 inches = 2;
+    bool cheese = 3;
+}
+
+message Order {
+    repeated Pizza pizzas = 1;
+    string customer_name = 2;
+    string address = 3;
+}
+
+message OrderConfirmation {
+    int64 estimated_delivery = 1;
+}
+
+service Pizzeria {
+    rpc RegisterOrder(Order) returns (OrderConfirmation) {}
+}
