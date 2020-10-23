@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Grpc.Net.Client;
+using System;
 
 namespace Client
 {
@@ -6,7 +7,8 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            var client = new Pizzeria.PizzeriaClient(channel);
         }
     }
 }
