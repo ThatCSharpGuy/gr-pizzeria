@@ -15,4 +15,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Protobuf Include="../service_definitions/service.proto" />
+  </ItemGroup>
+
 </Project>
