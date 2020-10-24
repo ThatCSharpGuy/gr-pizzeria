@@ -1,4 +1,5 @@
 from concurrent import futures
+from datetime import datetime, timedelta
 
 from service_pb2 import OrderConfirmation
 from service_pb2_grpc import PizzeriaServicer, add_PizzeriaServicer_to_server
@@ -9,11 +10,16 @@ import grpc
 class PizzeriaService(PizzeriaServicer):
 
     def RegisterOrder(self, request, context):
-        print("New order received:\n")
-        print(f"\tFrom: {request.customer_name}\n")
-        print(f"\tTo: {request.address}\n")
+        print("New order received:")
+        print(f"\tFrom: {request.customer_name}")
+        print(f"\tTo: {request.address}")
+        print("\tPizzas:")
+        for idx, pizza in enumerate(request.pizzas, 1):
+          toppings = ", ".join(pizza.toppings)
+          print(f"\t\tPizza {idx}: {pizza.inches}\" ({toppings})")
 
-        return OrderConfirmation(estimated_delivery=10)
+        estimated_delivery = (datetime.now() + timedelta(minutes=30)) - datetime(1970,1,1)
+        return OrderConfirmation(estimated_delivery=int(estimated_delivery.total_seconds()))
 
 def serve():
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

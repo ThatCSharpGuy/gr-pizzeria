@@ -1,6 +1,6 @@
 ﻿using Grpc.Net.Client;
 using System;
-using System.Collections.Generic;
+using System.Threading;
 
 namespace Client
 {
@@ -15,21 +15,44 @@ namespace Client
             var channel = GrpcChannel.ForAddress("http://localhost:50051" );
             var client = new Pizzeria.PizzeriaClient(channel);
 
-            var order = new Order
+            var random = new Random();
+
+            while(true)
             {
-                Address = "My house",
-                CustomerName = "Antonio Feregrino",
-            };
-            for(int inchex = 10; inchex < 15; inchex++)
-            {
-                order.Pizzas.Add(new Pizza
+                var customer = Customer.Customers[random.Next(Customer.Customers.Length)];
+                var order = new Order
                 {
-                    Cheese = true,
-                    Inches = inchex
-                });
+                    Address = customer.Address,
+                    CustomerName = customer.CustomerName,
+                };
+
+
+                var numberOfPizzas = random.Next(1, 3);
+                for(int idx = 0; idx < numberOfPizzas; idx++)
+                {
+                    var pizza = new Pizza
+                    {
+                        Cheese = random.Next(10) % 2 == 0,
+                        Inches = random.Next(10, 21)
+                    };
+
+                    foreach(string topping in Toppings.Select(10))
+                    {
+                        pizza.Toppings.Add(topping);
+                    }
+                    order.Pizzas.Add(pizza);
+                }
+
+                var confirmation = client.RegisterOrder(order);
+                Console.WriteLine($"Your order will arrive at: {ToDateString(confirmation.EstimatedDelivery)}");
+                Thread.Sleep(1000 * random.Next(1, 4));
             }
-            var confirmation = client.RegisterOrder(order);
-            Console.WriteLine(confirmation.EstimatedDelivery);
+        }
+
+        static string ToDateString(long date)
+        {
+            var dt = DateTime.MinValue.AddSeconds(date);
+            return dt.ToShortDateString() + " " + dt.ToShortTimeString();
         }
     }
 }
