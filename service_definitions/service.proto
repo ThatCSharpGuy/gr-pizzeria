@@ -16,6 +16,10 @@ message OrderConfirmation {
     int64 estimated_delivery = 1;
 }
 
+message Empty {
+}
+
 service Pizzeria {
+    rpc IsReady(Empty) returns (Empty) {}
     rpc RegisterOrder(Order) returns (OrderConfirmation) {}
 }

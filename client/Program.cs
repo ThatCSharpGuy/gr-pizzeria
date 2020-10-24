@@ -1,5 +1,8 @@
-﻿using Grpc.Net.Client;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using Polly;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace Client
@@ -8,14 +11,19 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            // This switch must be set before creating the GrpcChannel/HttpClient.
-            AppContext.SetSwitch(
-                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-
-            var channel = GrpcChannel.ForAddress("http://localhost:50051");
-            var client = new Pizzeria.PizzeriaClient(channel);
 
             var random = new Random();
+
+            var client = Policy
+              .Handle<Exception>()
+              .WaitAndRetry(
+                5,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                (exception, timeSpan, context) =>
+                {
+                    Console.WriteLine($"Server not available yet!");
+                }
+              ).Execute(() => GetClient("http://127.0.0.1:50051"));
 
             while (true)
             {
@@ -47,6 +55,18 @@ namespace Client
                 Console.WriteLine($"Your order will arrive at: {ToDateString(confirmation.EstimatedDelivery)}");
                 Thread.Sleep(1000 * random.Next(1, 4));
             }
+        }
+
+        static Pizzeria.PizzeriaClient GetClient(string address)
+        {
+            // This switch must be set before creating the GrpcChannel/HttpClient.
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+            var channel = GrpcChannel.ForAddress(address);
+            var client = new Pizzeria.PizzeriaClient(channel);
+            client.IsReady(new Empty());
+            return client;
         }
 
         static string ToDateString(long date)
