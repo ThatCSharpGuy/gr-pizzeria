@@ -12,12 +12,12 @@ namespace Client
             AppContext.SetSwitch(
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
-            var channel = GrpcChannel.ForAddress("http://localhost:50051" );
+            var channel = GrpcChannel.ForAddress("http://localhost:50051");
             var client = new Pizzeria.PizzeriaClient(channel);
 
             var random = new Random();
 
-            while(true)
+            while (true)
             {
                 var customer = Customer.Customers[random.Next(Customer.Customers.Length)];
                 var order = new Order
@@ -27,8 +27,8 @@ namespace Client
                 };
 
 
-                var numberOfPizzas = random.Next(1, 3);
-                for(int idx = 0; idx < numberOfPizzas; idx++)
+                var numberOfPizzas = random.Next(1, 5);
+                for (int idx = 0; idx < numberOfPizzas; idx++)
                 {
                     var pizza = new Pizza
                     {
@@ -36,7 +36,7 @@ namespace Client
                         Inches = random.Next(10, 21)
                     };
 
-                    foreach(string topping in Toppings.Select(10))
+                    foreach (string topping in Toppings.Select(10))
                     {
                         pizza.Toppings.Add(topping);
                     }
